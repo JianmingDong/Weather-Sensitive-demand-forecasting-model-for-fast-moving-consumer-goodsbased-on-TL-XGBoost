@@ -1,0 +1,33 @@
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor
+import warnings
+import sys
+warnings.filterwarnings('ignore')
+data = pd.read_csv('DATA.csv')
+train = data.ix[0:555201]
+test = data.ix[555201:685460]
+y_train = train['sales_number'].values
+# 删除列
+df_train = train.drop(['日期','sales_number'], axis=1).values
+df_test = test.drop(['日期','sales_number'], axis=1).values
+
+gbdt=GradientBoostingRegressor(
+  loss='ls'
+, learning_rate=0.1
+, n_estimators=100
+, subsample=1
+, min_samples_split=2
+, min_samples_leaf=1
+, max_depth=3
+, init=None
+, random_state=None
+, max_features=None
+, alpha=0.9
+, verbose=0
+, max_leaf_nodes=None
+, warm_start=False
+)
+gbdt.fit(df_train,y_train)
+pred=gbdt.predict(df_test)
+print (pred)

@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+from sklearn import svm
+from sklearn.svm import SVR
+from sklearn import preprocessing
+import warnings
+
+warnings.filterwarnings('ignore')
+data = pd.read_csv('DATA.csv')
+train = data.ix[0:555201]
+test = data.ix[555201:685460]
+y_train = train['sales_number'].values
+# 删除列
+df_train = train.drop(['日期','sales_number'], axis=1).values
+df_test = test.drop(['日期','sales_number'], axis=1).values
+print(df_train)
+min_max_scaler = preprocessing.MinMaxScaler()
+X_train_minmax = min_max_scaler.fit_transform(df_train)
+X_test_minmax = min_max_scaler.fit_transform(df_test)
+print(X_train_minmax)
+# 预测
+linear_svr = SVR(kernel='linear')
+linear_svr.fit(X_train_minmax, y_train)
+#Predict Output
+linear_svr_y_predict = linear_svr.predict(X_test_minmax)
+print (linear_svr_y_predict)
+print (linear_svr_y_predict)
+np.savetxt(r'C:\Users\skygrin\Desktop\2.csv',linear_svr_y_predict)

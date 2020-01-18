@@ -1,0 +1,237 @@
+mymatrix <- function(train){
+  
+  matrix_num <- train[,c("当天是否放假","节假日","本次节假日天数","最高气温","最低气温","平均气温","温差","上一周总销量","上周每天平均销量","上周对应星期销量","上月日平均销量","上月周平均","近一个月平均销量")]
+  
+  matrix_num <- cbind(matrix_num,
+                      
+                model.matrix(~store_code_id	-1,train),
+                
+                model.matrix(~commodity_code_id-1,train),
+                
+                model.matrix(~small_class_code_id-1,train),
+                
+                model.matrix(~星期-1,train),
+           
+                model.matrix(~trade_area_id-1,train),
+                model.matrix(~morning_weather_id-1,train),
+                model.matrix(~night_weather_id-1,train) 
+                      
+  )
+  
+  return(data.matrix(matrix_num))
+  
+}
+xgb.train_val <- mymatrix(train_val)
+
+test <- all_bms[c(555201:685459),]
+
+> all_bms <- read.csv("DATA2.csv",header=T,stringsAsFactors = F)
+> cols <- c("store_code_id","commodity_code_id","small_class_code_id","节假日","当天是否放假","星期","trade_area_id") 
+> for (i in cols) {
+   
+   all_bms[,i] <- factor(all_bms[,i])
+ }
+> train <- all_bms[c(1:555200),]
+> test <- all_bms[c(555201:685460),]
+> train<-train[,-22]
+> train<-train[,-21]
+ train<-train[,-13]
+ train<-train[,-12]
+ train<-train[,-11]
+ train<-train[,-10]
+ train<-train[,-9]
+ train<-train[,-8]
+> test<-test[,-22]
+> test<-test[,-21]
+test<-test[,-13]
+test<-test[,-12]
+test<-test[,-11]
+test<-test[,-10]
+test<-test[,-9]
+test<-test[,-8]
+> train_val <- train
+> test_val <- train[c(522999:555200),]
+> set.seed(1235)
+> myformula <- 是否销售 ~ store_code_id + commodity_code_id + small_class_code_id + 节假日 + 当天是否放假 +本次节假日天数 + 星期+morning_weather_id + night_weather_id +最高气温+最低气温+平均气温+温差+trade_area_id+上一周总销量+上周每天平均销量+上周对应星期销量+上月日平均销量+上月周平均+近一个月平均销量
+myformula <- sales_number ~ store_code_id + commodity_code_id + small_class_code_id + 节假日 + 当天是否放假 +本次节假日天数 + 星期 +trade_area_id+上一周总销量+上周每天平均销量+上周对应星期销量+上月日平均销量+上月周平均+近一个月平均销量
+> model.rmse <- function(pred,act){ sqrt(sum((act - pred)^2)/
++                                          
++                                          length(act)) }
+> mymatrix <- function(train){
+matrix_num <- train[,c("当天是否放假","节假日","本次节假日天数","最高气温","最低气温","平均气温","温差","上一周总销量","上周每天平均销量","上周对应星期销量","上月日平均销量","上月周平均","近一个月平均销量")]
+matrix_num <- cbind(matrix_num,
+                       
+                 model.matrix(~store_code_id-1,train),
+                 
+                 model.matrix(~commodity_code_id-1,train),
+                 
+                 model.matrix(~small_class_code_id-1,train),
+                 
+                 model.matrix(~星期-1,train),
+            
+                 model.matrix(~trade_area_id-1,train),
+                 model.matrix(~morning_weather_id-1,train),
+                 model.matrix(~night_weather_id-1,train) 
+                       
+   )
+   
+   return(data.matrix(matrix_num))
+   
+ }
+
+mymatrix <- function(train){
+matrix_num <- train[,c("当天是否放假","节假日","本次节假日天数","上一周总销量","上周每天平均销量","上周对应星期销量","上月日平均销量","上月周平均","近一个月平均销量")]
+matrix_num <- cbind(matrix_num,
+                       
+                 model.matrix(~store_code_id-1,train),
+                 
+                 model.matrix(~commodity_code_id-1,train),
+                 
+                 model.matrix(~small_class_code_id-1,train),
+                 
+                 model.matrix(~星期-1,train),
+            
+                 model.matrix(~trade_area_id-1,train)
+
+                       
+   )
+   
+   return(data.matrix(matrix_num))
+   
+ }
+> xgb.train_val <- mymatrix(train_val)
+> xgb.test_val <- mymatrix(test_val)
+> test <- all_bms[c(555201:685459),]
+> xgb.test <- mymatrix(test)
+> dtrain_val <- xgb.DMatrix(data =xgb.train_val,label=train_val$sales_number)
+> dtest_val <- xgb.DMatrix(data = xgb.test_val,label=test_val$sales_number)
+> dtest_sub <- xgb.DMatrix(data = xgb.test)
+> model <- xgboost(data = dtrain_val,nround = 1000,max.depth = 10)
+> summary(model)
+               Length   Class              Mode       
+handle                1 xgb.Booster.handle externalptr
+raw            37289024 -none-             raw        
+niter                 1 -none-             numeric    
+evaluation_log        2 data.table         list       
+call                 14 -none-             call       
+params                2 -none-             list       
+callbacks             2 -none-             list       
+feature_names       156 -none-             character  
+nfeatures             1 -none-             numeric    
+> pred <- predict(model,dtest_val)
+> model.rmse(pred,test_val$sales_number)
+[1] 0.4044112
+> xgb.importance(colnames(xgb.train_val),model)
+                 Feature         Gain        Cover    Frequency
+  1:    近一个月平均销量 7.915684e-01 0.0612520929 3.950420e-02
+  2:    上周对应星期销量 3.496920e-02 0.0830547496 9.361579e-02
+  3:        上一周总销量 2.958324e-02 0.1713565253 1.177286e-01
+  4:    上周每天平均销量 2.260033e-02 0.0405006294 2.889070e-02
+  5:          上月周平均 1.652167e-02 0.1411396419 5.755045e-02
+ ---                                                           
+150: commodity_code_id39 1.499080e-07 0.0003671678 2.716933e-05
+151: commodity_code_id59 1.232070e-07 0.0007939530 3.105066e-05
+152: commodity_code_id43 5.777929e-08 0.0005869786 2.910999e-05
+153: commodity_code_id56 2.435053e-08 0.0003934132 1.746599e-05
+154: commodity_code_id58 7.335603e-09 0.0002960127 5.821998e-06
+> pred.test <- predict(model,dtest_sub)
+> model.rmse(pred.test,test$sales_number)
+[1] 2.79358
+> submit <- data.frame(Item_Identifier = test$Item_Identifier, Outlet_Identifier = test$Outlet_Identifier,Item_Outlet_Sales=pred.test*test$Item_MRP)
+> write.csv(pred.test, file = "xgb-logic.csv", row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+ all_bms <- read.csv("DATA3.csv",header=T,stringsAsFactors = F)
+ cols <- c("store_code_id","commodity_code_id","small_class_code_id","节假日","当天是否放假","星期","trade_area_id") 
+ for (i in cols) {
+   
+   all_bms[,i] <- factor(all_bms[,i])
+ }
+ train <- all_bms[c(1:555200),]
+ test <- all_bms[c(555201:685460),]
+ train<-train[,-16]
+
+ test<-test[,-16]
+
+
+> train_val <- train
+> test_val <- train[c(522999:555200),]
+> set.seed(1235)
+
+myformula <- sales_number ~ store_code_id + commodity_code_id + small_class_code_id + 节假日 + 当天是否放假 +本次节假日天数 + 星期 +trade_area_id+上一周总销量+上周每天平均销量+上周对应星期销量+上月日平均销量+上月周平均+近一个月平均销量
+> model.rmse <- function(pred,act){ sqrt(sum((act - pred)^2)/
+                                          
+                                          length(act)) }
+
+
+mymatrix <- function(train){
+matrix_num <- train[,c("当天是否放假","节假日","本次节假日天数","上一周总销量","上周每天平均销量","上周对应星期销量","上月日平均销量","上月周平均","近一个月平均销量")]
+matrix_num <- cbind(matrix_num,
+                       
+                 model.matrix(~store_code_id-1,train),
+                 
+                 model.matrix(~commodity_code_id-1,train),
+                 
+                 model.matrix(~small_class_code_id-1,train),
+                 
+                 model.matrix(~星期-1,train),
+            
+                 model.matrix(~trade_area_id-1,train)
+
+                       
+   )
+   
+   return(data.matrix(matrix_num))
+   
+ }
+> xgb.train_val <- mymatrix(train_val)
+> xgb.test_val <- mymatrix(test_val)
+> test <- all_bms[c(555201:685459),]
+> xgb.test <- mymatrix(test)
+> dtrain_val <- xgb.DMatrix(data =xgb.train_val,label=train_val$sales_number)
+> dtest_val <- xgb.DMatrix(data = xgb.test_val,label=test_val$sales_number)
+> dtest_sub <- xgb.DMatrix(data = xgb.test)
+> model <- xgboost(data = dtrain_val,nround = 1000,max.depth = 10)
+> summary(model)
+               Length   Class              Mode       
+handle                1 xgb.Booster.handle externalptr
+raw            37289024 -none-             raw        
+niter                 1 -none-             numeric    
+evaluation_log        2 data.table         list       
+call                 14 -none-             call       
+params                2 -none-             list       
+callbacks             2 -none-             list       
+feature_names       156 -none-             character  
+nfeatures             1 -none-             numeric    
+> pred <- predict(model,dtest_val)
+> model.rmse(pred,test_val$sales_number)
+[1] 0.4044112
+> xgb.importance(colnames(xgb.train_val),model)
+                 Feature         Gain        Cover    Frequency
+  1:    近一个月平均销量 7.915684e-01 0.0612520929 3.950420e-02
+  2:    上周对应星期销量 3.496920e-02 0.0830547496 9.361579e-02
+  3:        上一周总销量 2.958324e-02 0.1713565253 1.177286e-01
+  4:    上周每天平均销量 2.260033e-02 0.0405006294 2.889070e-02
+  5:          上月周平均 1.652167e-02 0.1411396419 5.755045e-02
+ ---                                                           
+150: commodity_code_id39 1.499080e-07 0.0003671678 2.716933e-05
+151: commodity_code_id59 1.232070e-07 0.0007939530 3.105066e-05
+152: commodity_code_id43 5.777929e-08 0.0005869786 2.910999e-05
+153: commodity_code_id56 2.435053e-08 0.0003934132 1.746599e-05
+154: commodity_code_id58 7.335603e-09 0.0002960127 5.821998e-06
+> pred.test <- predict(model,dtest_sub)
+> model.rmse(pred.test,test$sales_number)
+[1] 2.79358
+> submit <- data.frame(Item_Identifier = test$Item_Identifier, Outlet_Identifier = test$Outlet_Identifier,Item_Outlet_Sales=pred.test*test$Item_MRP)
+> write.csv(pred.test, file = "xgb-lack weather.csv", row.names = FALSE)
+
+0.6103993
+2.84462
